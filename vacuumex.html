@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <title>Vacuum Example Interactive Showcase</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.4.0/model-viewer.min.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+
+      :not(:defined) > * {
+        display: none;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Prompt', sans-serif;
+        background-color: #f8fafc;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        background-color: #f8fafc;
+        --poster-color: transparent;
+      }
+
+      /* ================= จุด Hotspot ================= */
+      .Hotspot {
+        background: #ffffff;
+        border-radius: 32px;
+        border: 2.5px solid #2563eb;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        box-sizing: border-box;
+        cursor: pointer;
+        height: 20px;
+        width: 20px;
+        padding: 0;
+        position: relative;
+        transition: all 0.25s ease;
+      }
+
+      .Hotspot:hover, .Hotspot.active {
+        background: #2563eb;
+        transform: scale(1.25);
+      }
+
+      .Hotspot:not([data-visible]) {
+        background: transparent;
+        border: 2px solid #cbd5e1;
+        box-shadow: none;
+        pointer-events: none;
+      }
+
+      model-viewer.hide-hotspots .Hotspot {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      .HotspotAnnotation {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        color: #1e293b;
+        display: block;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        left: calc(100% + 10px);
+        padding: 4px 10px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: pre-line;
+        pointer-events: none;
+        transition: all 0.2s ease;
+      }
+
+      .Hotspot.active .HotspotAnnotation {
+        background: #2563eb;
+        color: #ffffff;
+      }
+
+      .Hotspot:not([data-visible]) > * {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ================= แถบโหลดโมเดล ================= */
+      .progress-bar {
+        display: block;
+        width: 30%;
+        height: 6px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 25px;
+        background-color: rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+      }
+      .progress-bar.hide { visibility: hidden; }
+      .update-bar {
+        background-color: #2563eb;
+        width: 0%;
+        height: 100%;
+        transition: width 0.3s;
+      }
+
+      /* ================= แถบปุ่มควบคุมด้านล่าง ================= */
+      .control-bar {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        padding: 8px 14px;
+        border-radius: 50px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        border: 1px solid #e2e8f0;
+        z-index: 10;
+        max-width: 95vw;
+        overflow-x: auto;
+      }
+
+      .ctrl-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .ctrl-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+      .ctrl-btn.primary { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+      .ctrl-btn.primary:hover { background: #1d4ed8; }
+
+      /* ================= หน้าต่าง Popup ================= */
+      .info-popup {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 340px;
+        max-width: calc(100vw - 40px);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e2e8f0;
+        padding: 18px;
+        z-index: 20;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+
+      .info-popup.open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+      .popup-badge { font-size: 11px; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+      .close-btn { background: #f1f5f9; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; color: #64748b; display: flex; align-items: center; justify-content: center; }
+      .close-btn:hover { background: #e2e8f0; color: #0f172a; }
+      .popup-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #0f172a; }
+      
+      .popup-media { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; display: none; }
+      .popup-media img, .popup-media video { width: 100%; max-height: 190px; object-fit: cover; display: block; }
+      .popup-desc { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 14px 0; white-space: pre-line; }
+
+      .audio-btn { width: 100%; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; font-family: 'Prompt', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+      .audio-btn:hover { background: #e2e8f0; }
+      .audio-btn.playing { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+      #ar-button { background-color: #ffffff; position: absolute; top: 20px; left: 20px; padding: 8px 16px; font-family: 'Prompt', sans-serif; font-size: 13px; color: #2563eb; border-radius: 20px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor: pointer; }
+
+      @media (max-width: 640px) {
+        .info-popup { top: 12px; right: 12px; left: 12px; width: auto; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ใช้การตั้งค่ามุมกล้องและแสงจาก snippet_2.txt -->
+    <model-viewer 
+      id="vacuum-viewer"
+      src="https://piyawat043.github.io/3dmodelview/vacuum_ex.glb" 
+      ar 
+      ar-modes="webxr scene-viewer quick-look" 
+      camera-controls 
+      touch-action="pan-y"
+      tone-mapping="neutral" 
+      shadow-intensity="2" 
+      exposure="1.28" 
+      shadow-softness="1" 
+      environment-image="legacy"
+      camera-orbit="3.778deg 74.8deg 2.674m" 
+      field-of-view="20.11deg" 
+      min-camera-orbit="-14deg 5deg auto" 
+      max-camera-orbit="8deg 79deg auto">
+
+      <!-- ข้อมูล Hotspot จากไฟล์ snippet_2.txt -->
+      <button class="Hotspot" slot="hotspot-1" data-id="hotspot-1" data-position="0.14728438389019627m -0.04420307828119793m -0.2125742962494918m" data-normal="0.0020909524678074756m 0.9999842891292221m 0.005200904969524393m" data-visibility-attribute="visible">
+          <div class="HotspotAnnotation">ตัวอย่างสำเร็จ</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-3" data-id="hotspot-3" data-position="-0.09975788658298201m -0.04175009352813376m -0.5848926871429172m" data-normal="0.0020909524678074443m 0.9999842891292221m 0.005200904969524357m" data-visibility-attribute="visible">
+          <div class="HotspotAnnotation">Step 1 วางวัสดุ</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-4" data-id="hotspot-4" data-position="0.11037490437446362m -0.04221068658330552m -0.5808154453568689m" data-normal="0.0020909524678070844m 0.999984289129222m 0.005200904969524365m" data-visibility-attribute="visible">
+          <div class="HotspotAnnotation">Step 2 พลิกชิ้นงาน</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-5" data-id="hotspot-5" data-position="-0.06886423366442135m -0.01330708910611883m -0.4082119037381376m" data-normal="-0.21049075738726505m -0.00464427252279961m 0.9775848156488877m" data-visibility-attribute="visible">
+          <div class="HotspotAnnotation">Step 3 เจาะสัน</div>
+      </button>
+
+      <div class="progress-bar hide" slot="progress-bar">
+          <div class="update-bar"></div>
+      </div>
+      <button slot="ar-button" id="ar-button">
+          📱 ดูขนาดจริง (AR)
+      </button>
+    </model-viewer>
+
+    <!-- Popup สำหรับแสดงข้อมูล / รูปภาพ / เสียง -->
+    <div id="info-popup" class="info-popup">
+      <div class="popup-header">
+        <span id="popup-step" class="popup-badge">จุดที่ 1 / 4</span>
+        <button class="close-btn" onclick="closePopup()" title="ปิดหน้าต่าง">✕</button>
+      </div>
+      <h3 id="popup-title" class="popup-title">ชื่อขั้นตอน</h3>
+      <div id="popup-media" class="popup-media"></div>
+      <p id="popup-desc" class="popup-desc">รายละเอียด...</p>
+      <button id="audio-btn" class="audio-btn" onclick="toggleAudio()">
+        🔊 ฟังเสียงบรรยาย
+      </button>
+    </div>
+
+    <!-- แถบควบคุมด้านล่าง -->
+    <div class="control-bar">
+      <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
+        👁️ ซ่อนจุดอธิบาย
+      </button>
+      <button class="ctrl-btn" onclick="prevHotspot()">◀ ก่อนหน้า</button>
+      <button class="ctrl-btn primary" onclick="nextHotspot()">ถัดไป ▶</button>
+      <button class="ctrl-btn" onclick="resetCamera()">🔄 รีเซ็ตมุมมอง</button>
+    </div>
+
+    <script>
+      // ข้อมูลเนื้อหาแบบต่อยอดได้เรื่อยๆ (จัดระเบียบใหม่ให้อ่านง่ายและรองรับการขึ้นบรรทัดใหม่)
+      const hotspotData = [
+        {
+          id: "hotspot-1",
+          title: "ตัวอย่างสำเร็จ",
+          desc: "แสดงชิ้นงานที่ผ่านกระบวนการทำเสร็จสมบูรณ์",
+          orbit: "0deg 75deg 2m",
+          mediaType: "", mediaUrl: "", audioUrl: ""
+        },
+        {
+          id: "hotspot-3",
+          title: "Step 1: วางวัสดุ",
+          desc: "- วางเอียง\n- วัด 6 จุด",
+          orbit: "-10deg 75deg 2m",
+          mediaType: "", mediaUrl: "", audioUrl: ""
+        },
+        {
+          id: "hotspot-4",
+          title: "Step 2: พลิกชิ้นงาน",
+          desc: "- วางเอียง\n- วัด 6 จุด",
+          orbit: "10deg 75deg 2m",
+          mediaType: "", mediaUrl: "", audioUrl: ""
+        },
+        {
+          id: "hotspot-5",
+          title: "Step 3: เจาะสัน",
+          desc: "- วางเอียง\n- วัด 6 จุด",
+          orbit: "0deg 60deg 1.5m",
+          mediaType: "", mediaUrl: "", audioUrl: ""
+        }
+      ];
+
+      const viewer = document.getElementById('vacuum-viewer');
+      const popup = document.getElementById('info-popup');
+      const defaultOrbit = "3.778deg 74.8deg 2.674m";
+      let currentIndex = -1;
+      let hotspotsVisible = true;
+      let currentAudio = null;
+      let isPlaying = false;
+
+      // จัดการแถบโหลด
+      viewer.addEventListener('progress', (event) => {
+        const progressBar = event.target.querySelector('.progress-bar');
+        const updatingBar = event.target.querySelector('.update-bar');
+        updatingBar.style.width = `${event.detail.totalProgress * 100}%`;
+        if (event.detail.totalProgress === 1) progressBar.classList.add('hide');
+        else progressBar.classList.remove('hide');
+      });
+
+      // ผูกคำสั่งคลิก
+      document.querySelectorAll('.Hotspot').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const idx = hotspotData.findIndex(item => item.id === id);
+          if (idx !== -1) selectHotspot(idx);
+        });
+      });
+
+      function selectHotspot(index) {
+        stopAudio();
+        currentIndex = index;
+        const data = hotspotData[index];
+        const btn = document.querySelector(`.Hotspot[data-id="${data.id}"]`);
+
+        document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
+        if (btn) {
+          btn.classList.add('active');
+          viewer.cameraTarget = btn.getAttribute('data-position');
+          viewer.cameraOrbit = data.orbit;
+        }
+
+        document.getElementById('popup-step').textContent = `ขั้นตอน ${index + 1} / ${hotspotData.length}`;
+        document.getElementById('popup-title').textContent = data.title;
+        document.getElementById('popup-desc').textContent = data.desc;
+
+        const mediaBox = document.getElementById('popup-media');
+        mediaBox.innerHTML = '';
+        if (data.mediaUrl && data.mediaType === 'video') {
+          mediaBox.innerHTML = `<video src="${data.mediaUrl}" autoplay loop muted playsinline></video>`;
+          mediaBox.style.display = 'block';
+        } else if (data.mediaUrl) {
+          mediaBox.innerHTML = `<img src="${data.mediaUrl}" alt="${data.title}">`;
+          mediaBox.style.display = 'block';
+        } else {
+          mediaBox.style.display = 'none';
+        }
+        popup.classList.add('open');
+      }
+
+      function nextHotspot() {
+        if (!hotspotsVisible) toggleHotspots();
+        const nextIdx = (currentIndex + 1) % hotspotData.length;
+        selectHotspot(nextIdx);
+      }
+
+      function prevHotspot() {
+        if (!hotspotsVisible) toggleHotspots();
+        const prevIdx = (currentIndex - 1 + hotspotData.length) % hotspotData.length;
+        selectHotspot(prevIdx);
+      }
+
+      function toggleHotspots() {
+        hotspotsVisible = !hotspotsVisible;
+        const btn = document.getElementById('toggle-hs-btn');
+        if (hotspotsVisible) {
+          viewer.classList.remove('hide-hotspots');
+          btn.innerHTML = '👁️ ซ่อนจุดอธิบาย';
+        } else {
+          viewer.classList.add('hide-hotspots');
+          btn.innerHTML = '👁️ แสดงจุดอธิบาย';
+          closePopup();
+        }
+      }
+
+      function closePopup() {
+        stopAudio();
+        popup.classList.remove('open');
+        document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
+      }
+
+      function resetCamera() {
+        closePopup();
+        currentIndex = -1;
+        viewer.cameraTarget = "auto auto auto";
+        viewer.cameraOrbit = defaultOrbit;
+      }
+
+      function toggleAudio() {
+        if (isPlaying) { stopAudio(); return; }
+        if (currentIndex === -1) return;
+        const data = hotspotData[currentIndex];
+        const audioBtn = document.getElementById('audio-btn');
+
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioBtn.innerHTML = '⏹️ หยุดเสียงบรรยาย';
+
+        if (data.audioUrl) {
+          currentAudio = new Audio(data.audioUrl);
+          currentAudio.play();
+          currentAudio.onended = () => stopAudio();
+        } else if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(`${data.title}. ${data.desc}`);
+          utterance.lang = 'th-TH';
+          utterance.rate = 1.0;
+          utterance.onend = () => stopAudio();
+          window.speechSynthesis.speak(utterance);
+        }
+      }
+
+      function stopAudio() {
+        isPlaying = false;
+        const audioBtn = document.getElementById('audio-btn');
+        audioBtn.classList.remove('playing');
+        audioBtn.innerHTML = '🔊 ฟังเสียงบรรยาย';
+        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      }
+    </script>
+  </body>
+</html>
