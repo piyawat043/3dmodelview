@@ -27,13 +27,13 @@
         --poster-color: transparent;
       }
 
-      /* ================= จุด Hotspot บนเครื่อง CNC ================= */
       .Hotspot {
         --line-w: 40px;
         --offset-y: 0px;
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(255, 255, 255, 0.85);
         border-radius: 50%;
-        border: 2px solid rgba(37, 99, 235, 0.85);
+        border: 2px solid #2563eb;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         box-sizing: border-box;
         cursor: pointer;
         height: 15px;
@@ -41,6 +41,11 @@
         padding: 0;
         position: relative;
         transition: all 0.3s ease;
+        z-index: 5;
+      }
+
+      .Hotspot:not([data-visible]) {
+        opacity: 0.85;
       }
 
       .Hotspot:hover, .Hotspot.active {
@@ -48,47 +53,38 @@
         border-color: #ffffff;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
         transform: scale(1.25);
+        opacity: 1 !important;
         z-index: 20;
       }
 
-      /* จางจุดอื่นลงเมื่อกำลังโฟกัสจุดใดจุดหนึ่ง */
       model-viewer.has-focus .Hotspot:not(.active) {
         opacity: 0.2;
-        pointer-events: auto;
       }
 
-      .Hotspot:not([data-visible]) {
-        background: transparent;
-        border: 1.5px solid rgba(203, 213, 225, 0.5);
-        pointer-events: none;
-      }
-
-      /* เส้นชี้จากจุดบนชิ้นงานออกไปทางขวา */
       .Hotspot::before {
         content: "";
         position: absolute;
         left: 100%;
         top: 50%;
         width: var(--line-w);
-        height: 1px;
-        background: linear-gradient(90deg, rgba(37, 99, 235, 0.7), rgba(148, 163, 184, 0.35));
+        height: 1.5px;
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.8), rgba(148, 163, 184, 0.45));
         pointer-events: none;
         transition: all 0.35s ease;
       }
 
-      /* ================= กล่องข้อความโปร่งใส (อยู่ทางขวา) ================= */
       .HotspotAnnotation {
-        background: rgba(255, 255, 255, 0.52);
+        background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
-        border: 1px solid rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.85);
         border-radius: 10px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         color: #1e293b;
         display: block;
         font-family: 'Prompt', sans-serif;
         font-size: 10.5px;
-        font-weight: 300;
+        font-weight: 400;
         line-height: 1.35;
         left: calc(100% + var(--line-w));
         padding: 5px 8px;
@@ -109,7 +105,6 @@
         transition: font-size 0.35s ease;
       }
 
-      /* ================= ขนาดรูปและวิดีโอ (สถานะปกติ - กะทัดรัด) ================= */
       .media-row {
         display: flex;
         gap: 5px;
@@ -118,51 +113,43 @@
 
       .media-row img,
       .media-row video {
-        width: 64px;
-        height: 42px;
+        width: 56px;
+        height: 38px;
         object-fit: cover;
         border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.85);
-        background-color: rgba(241, 245, 249, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        background-color: rgba(241, 245, 249, 0.5);
         display: block;
         transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      /* ================= ขยายขนาดเมื่อคลิกโฟกัส (Active State) ================= */
       .Hotspot.active .HotspotAnnotation {
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(37, 99, 235, 0.35);
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
-        font-size: 13px;
-        line-height: 1.5;
-        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(37, 99, 235, 0.45);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+        font-size: 12.5px;
+        line-height: 1.45;
+        padding: 9px 11px;
         top: 50%;
       }
 
       .Hotspot.active .HotspotAnnotation strong {
-        font-size: 14.5px;
-        margin-bottom: 4px;
+        font-size: 14px;
+        margin-bottom: 3px;
       }
 
       .Hotspot.active .media-row {
-        gap: 8px;
-        margin-top: 8px;
+        gap: 6px;
+        margin-top: 6px;
       }
 
       .Hotspot.active .media-row img,
       .Hotspot.active .media-row video {
-        width: 145px;
-        height: 92px;
+        width: 125px;
+        height: 80px;
         border-radius: 6px;
       }
 
-      .Hotspot:not([data-visible]) > *,
-      .Hotspot:not([data-visible])::before {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      /* ================= แถบโหลดโมเดล ================= */
       .progress-bar {
         display: block;
         width: 30%;
@@ -183,19 +170,18 @@
         transition: width 0.3s;
       }
 
-      /* ปุ่ม AR มุมซ้ายล่าง */
       #ar-button {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(4px);
         position: absolute;
-        bottom: 16px;
-        left: 16px;
-        padding: 6px 12px;
+        bottom: 14px;
+        left: 14px;
+        padding: 5px 10px;
         font-family: 'Prompt', sans-serif;
         font-size: 11px;
         color: #334155;
-        border-radius: 12px;
-        border: 1px solid rgba(203, 213, 225, 0.5);
+        border-radius: 10px;
+        border: 1px solid rgba(203, 213, 225, 0.7);
         cursor: pointer;
       }
 
@@ -203,13 +189,12 @@
         .Hotspot::before { width: calc(var(--line-w) * 0.45); }
         .HotspotAnnotation { left: calc(100% + (var(--line-w) * 0.45)); }
         .Hotspot.active .media-row img,
-        .Hotspot.active .media-row video { width: 105px; height: 68px; }
+        .Hotspot.active .media-row video { width: 95px; height: 62px; }
       }
     </style>
   </head>
   <body>
 
-    <!-- ใช้การตั้งค่าพิกัด แสงเงา มุมกล้องของเครื่อง CNC -->
     <model-viewer 
       id="cnc-viewer"
       src="https://piyawat043.github.io/3dmodelview/Standardcncmodel.glb" 
@@ -220,19 +205,21 @@
       tone-mapping="neutral" 
       shadow-intensity="1" 
       exposure="1.33" 
-      camera-orbit="178.9deg 71.63deg 14.35m" 
+      camera-target="0.4m 1.3m 2.2m"
+      camera-orbit="178.9deg 71.63deg 15.2m" 
       field-of-view="26.26deg" 
       min-camera-orbit="auto 0deg auto" 
       max-camera-orbit="auto 81deg auto">
 
       <!-- 2: Home sensor Y -->
       <button class="Hotspot" slot="hotspot-2" 
-        style="--line-w: 60px; --offset-y: 0px;"
+        style="--line-w: 45px; --offset-y: 0px;"
         data-position="2.4067832064415735m 0.06695058431680578m 0.05028558408372019m" 
-        data-focus-target="3.5m 0.06m 0.05m"
-        data-orbit="160deg 65deg 5.5m">
+        data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m"
+        data-focus-target="1.4m 0.06m 0.05m"
+        data-orbit="160deg 65deg 5.8m">
           <div class="HotspotAnnotation">
-            <strong>Home sensor Y</strong>กำหนดจุดอ้างอิงศูนย์<br>ให้เครื่องจักรทำงานแม่นยำ
+            <strong>Home sensor Y</strong>กำหนดจุดอ้างอิงศูนย์
             <div class="media-row">
               <img src="2.png" alt="2" onerror="this.style.display='none'">
               <video src="2.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -242,12 +229,13 @@
 
       <!-- 3: Tool Setter -->
       <button class="Hotspot" slot="hotspot-3" 
-        style="--line-w: 120px; --offset-y: -20px;"
+        style="--line-w: 80px; --offset-y: -15px;"
         data-position="1.2653517841707542m 0.20518845673994296m 1.0534260374353885m" 
-        data-focus-target="2.2m 0.2m 1.05m"
-        data-orbit="175deg 55deg 4.5m">
+        data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m"
+        data-focus-target="0.4m 0.2m 1.05m"
+        data-orbit="175deg 55deg 4.8m">
           <div class="HotspotAnnotation">
-            <strong>Tool Setter</strong>อุปกรณ์วัดความยาวดอกกัด<br>ชดเชยค่าอัตโนมัติ
+            <strong>Tool Setter</strong>วัดความยาวดอกกัดอัตโนมัติ
             <div class="media-row">
               <img src="3.png" alt="3" onerror="this.style.display='none'">
               <video src="3.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -257,12 +245,13 @@
 
       <!-- 4: Work -->
       <button class="Hotspot" slot="hotspot-4" 
-        style="--line-w: 200px; --offset-y: 20px;"
+        style="--line-w: 115px; --offset-y: 15px;"
         data-position="0.26566021632043346m 0.19047419918133118m 2.255243115692978m" 
-        data-focus-target="1.2m 0.19m 2.25m"
-        data-orbit="180deg 50deg 4.5m">
+        data-normal="8.88178360791161e-16m 0.999999999999716m 7.537811943512186e-7m"
+        data-focus-target="-0.6m 0.19m 2.25m"
+        data-orbit="180deg 50deg 4.8m">
           <div class="HotspotAnnotation">
-            <strong>Work (พื้นที่จับยึด)</strong>รองรับแรงสั่นสะเทือนขณะกัด<br>รักษาความเรียบเนียน
+            <strong>Work (พื้นที่จับยึด)</strong>รองรับแรงสั่นสะเทือนขณะกัด
             <div class="media-row">
               <img src="4.png" alt="4" onerror="this.style.display='none'">
               <video src="4.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -272,12 +261,13 @@
 
       <!-- 5: 3D Probe -->
       <button class="Hotspot" slot="hotspot-5" 
-        style="--line-w: 250px; --offset-y: -40px;"
+        style="--line-w: 135px; --offset-y: -25px;"
         data-position="0.21904306679239408m 0.5918468484531553m 3.1320372908512737m" 
-        data-focus-target="1.2m 0.59m 3.13m"
-        data-orbit="195deg 70deg 3.8m">
+        data-normal="0.0013835367812601103m -0.0000011624310226153404m -0.9999990429118538m"
+        data-focus-target="-0.6m 0.59m 3.13m"
+        data-orbit="195deg 70deg 4.2m">
           <div class="HotspotAnnotation">
-            <strong>3D Probe</strong>หัววัดชิ้นงาน 3 มิติ<br>ตรวจสอบความเอียงก่อนเริ่ม
+            <strong>3D Probe</strong>หัววัดชิ้นงาน 3 มิติ
             <div class="media-row">
               <img src="5.png" alt="5" onerror="this.style.display='none'">
               <video src="5.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -287,12 +277,13 @@
 
       <!-- 6: Tool -->
       <button class="Hotspot" slot="hotspot-6" 
-        style="--line-w: 180px; --offset-y: -80px;"
+        style="--line-w: 105px; --offset-y: -55px;"
         data-position="0.37951888019162605m 0.7259307390041644m 3.321068921913396m" 
-        data-focus-target="1.3m 0.72m 3.32m"
-        data-orbit="160deg 70deg 3.8m">
+        data-normal="0.42767429438823606m 6.813676248554876e-7m -0.9039329056512215m"
+        data-focus-target="-0.5m 0.72m 3.32m"
+        data-orbit="160deg 70deg 4.2m">
           <div class="HotspotAnnotation">
-            <strong>Tool (ชุดหัวกัด)</strong>รองรับการเปลี่ยนทูลหลากหลาย<br>แบบความเร็วสูง
+            <strong>Tool (ชุดหัวกัด)</strong>เปลี่ยนทูลได้หลากหลาย
             <div class="media-row">
               <img src="6.png" alt="6" onerror="this.style.display='none'">
               <video src="6.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -302,12 +293,13 @@
 
       <!-- 7: Camera -->
       <button class="Hotspot" slot="hotspot-7" 
-        style="--line-w: 160px; --offset-y: 0px;"
+        style="--line-w: 95px; --offset-y: 0px;"
         data-position="0.3615248857106359m 1.493332158447763m 2.9521959318624926m" 
-        data-focus-target="1.3m 1.49m 2.95m"
-        data-orbit="180deg 75deg 3.8m">
+        data-normal="-8.269454114525494e-16m 7.537811943512186e-7m -0.999999999999716m"
+        data-focus-target="-0.5m 1.49m 2.95m"
+        data-orbit="180deg 75deg 4.2m">
           <div class="HotspotAnnotation">
-            <strong>Camera (กล้องตรวจสอบ)</strong>มองเห็นตำแหน่งการทำงานจริง<br>ลดความผิดพลาด
+            <strong>Camera</strong>กล้องตรวจสอบตำแหน่งจริง
             <div class="media-row">
               <img src="7.png" alt="7" onerror="this.style.display='none'">
               <video src="7.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -317,12 +309,13 @@
 
       <!-- 8: Home sensor X -->
       <button class="Hotspot" slot="hotspot-8" 
-        style="--line-w: 80px; --offset-y: -30px;"
+        style="--line-w: 50px; --offset-y: -20px;"
         data-position="2.6361515103362034m 1.8167653455235562m 4.119100644365791m" 
-        data-focus-target="3.6m 1.8m 4.1m"
-        data-orbit="150deg 75deg 5.5m">
+        data-normal="0.11202147648856658m 7.490367339822042e-7m -0.9937057858364118m"
+        data-focus-target="1.6m 1.8m 4.1m"
+        data-orbit="150deg 75deg 5.8m">
           <div class="HotspotAnnotation">
-            <strong>Home sensor X</strong>ควบคุมระยะการเคลื่อนที่<br>ซ้าย-ขวา ให้ปลอดภัย
+            <strong>Home sensor X</strong>ควบคุมระยะแกน X
             <div class="media-row">
               <img src="8.png" alt="8" onerror="this.style.display='none'">
               <video src="8.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -332,12 +325,13 @@
 
       <!-- 9: Home sensor Z -->
       <button class="Hotspot" slot="hotspot-9" 
-        style="--line-w: 220px; --offset-y: -100px;"
+        style="--line-w: 120px; --offset-y: -50px;"
         data-position="0.5427344125835531m 3.0891896220293895m 3.636501755594321m" 
-        data-focus-target="1.5m 3.08m 3.63m"
-        data-orbit="180deg 75deg 5.5m">
+        data-normal="-2.3310352154662366e-17m 0.6672441503135572m -0.7448390724662202m"
+        data-focus-target="-0.4m 3.08m 3.63m"
+        data-orbit="180deg 75deg 5.8m">
           <div class="HotspotAnnotation">
-            <strong>Home sensor Z</strong>ป้องกันหัวกัดเคลื่อนที่เกิน<br>และกำหนดความสูงอ้างอิง
+            <strong>Home sensor Z</strong>กำหนดความสูงอ้างอิงแกน Z
             <div class="media-row">
               <img src="9.png" alt="9" onerror="this.style.display='none'">
               <video src="9.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -355,9 +349,9 @@
 
     <script>
       const viewer = document.getElementById('cnc-viewer');
-      const defaultOrbit = "178.9deg 71.63deg 14.35m";
+      const defaultTarget = "0.4m 1.3m 2.2m";
+      const defaultOrbit = "178.9deg 71.63deg 15.2m";
 
-      // แถบโหลดโมเดล
       viewer.addEventListener('progress', (event) => {
         const progressBar = event.target.querySelector('.progress-bar');
         const updatingBar = event.target.querySelector('.update-bar');
@@ -366,21 +360,17 @@
         else progressBar.classList.remove('hide');
       });
 
-      // ฟังก์ชันรีเซ็ตกลับภาพรวม
       function resetView() {
         viewer.classList.remove('has-focus');
         document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
-        viewer.cameraTarget = "auto auto auto";
+        viewer.cameraTarget = defaultTarget;
         viewer.cameraOrbit = defaultOrbit;
       }
 
-      // คลิกที่จุดเพื่อเลื่อนชิ้นงานไปทางซ้าย และขยายกล่องทางขวา
       document.querySelectorAll('.Hotspot').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const isAlreadyActive = btn.classList.contains('active');
-
-          if (isAlreadyActive) {
+          if (btn.classList.contains('active')) {
             resetView();
             return;
           }
@@ -389,20 +379,15 @@
           btn.classList.add('active');
           viewer.classList.add('has-focus');
 
-          // ใช้ data-focus-target เพื่อดึงกล้องไปทางขวา (ให้โมเดลชิดซ้าย)
           const focusTarget = btn.getAttribute('data-focus-target') || btn.getAttribute('data-position');
           const orbit = btn.getAttribute('data-orbit');
-          
           if (focusTarget) viewer.cameraTarget = focusTarget;
           if (orbit) viewer.cameraOrbit = orbit;
         });
       });
-      
-      // ดับเบิลคลิกพื้นที่ว่างเพื่อรีเซ็ต
+
       viewer.addEventListener('dblclick', (e) => {
-        if (!e.target.closest('.Hotspot')) {
-          resetView();
-        }
+        if (!e.target.closest('.Hotspot')) resetView();
       });
     </script>
   </body>
