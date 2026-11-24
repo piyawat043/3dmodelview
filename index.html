@@ -1,44 +1,625 @@
 <!doctype html>
-<html lang="en">
+<html lang="th">
   <head>
-    <title>&lt;model-viewer&gt; template</title>
+    <title>CNC 3D Interactive Showcase</title>
     <meta charset="utf-8">
-    <meta name="description" content="&lt;model-viewer&gt; template">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link type="text/css" href="./styles.css" rel="stylesheet"/>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.4.0/model-viewer.min.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+
+      :not(:defined) > * {
+        display: none;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'Prompt', sans-serif;
+        background-color: #f8fafc;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        background-color: #f8fafc;
+        --poster-color: transparent;
+      }
+
+      /* ================= จุด Hotspot บนโมเดล ================= */
+      .Hotspot {
+        background: #ffffff;
+        border-radius: 32px;
+        border: 2.5px solid #2563eb;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        box-sizing: border-box;
+        cursor: pointer;
+        height: 20px;
+        width: 20px;
+        padding: 0;
+        position: relative;
+        transition: all 0.25s ease;
+      }
+
+      .Hotspot:hover, .Hotspot.active {
+        background: #2563eb;
+        transform: scale(1.25);
+      }
+
+      .Hotspot:not([data-visible]) {
+        background: transparent;
+        border: 2px solid #cbd5e1;
+        box-shadow: none;
+        pointer-events: none;
+      }
+
+      /* ซ่อน Hotspot ทั้งหมดเมื่อกดปุ่มปิด */
+      model-viewer.hide-hotspots .Hotspot {
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      .HotspotAnnotation {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        color: #1e293b;
+        display: block;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        left: calc(100% + 10px);
+        padding: 4px 10px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        pointer-events: none;
+        transition: all 0.2s ease;
+      }
+
+      .Hotspot.active .HotspotAnnotation {
+        background: #2563eb;
+        color: #ffffff;
+      }
+
+      /* ปรับป้าย Tool (hotspot-6) ไปด้านซ้ายไม่ให้ทับกับ 3Dprobe */
+      button[slot="hotspot-6"] .HotspotAnnotation {
+        left: auto;
+        right: calc(100% + 10px);
+      }
+
+      .Hotspot:not([data-visible]) > * {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ================= แถบโหลดโมเดล ================= */
+      .progress-bar {
+        display: block;
+        width: 30%;
+        height: 6px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 25px;
+        background-color: rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+      }
+      .progress-bar.hide { visibility: hidden; }
+      .update-bar {
+        background-color: #2563eb;
+        width: 0%;
+        height: 100%;
+        transition: width 0.3s;
+      }
+
+      /* ================= แถบปุ่มควบคุมด้านล่าง ================= */
+      .control-bar {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        padding: 8px 14px;
+        border-radius: 50px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        border: 1px solid #e2e8f0;
+        z-index: 10;
+        max-width: 95vw;
+        overflow-x: auto;
+      }
+
+      .ctrl-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .ctrl-btn:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+      }
+
+      .ctrl-btn.primary {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+      }
+
+      .ctrl-btn.primary:hover {
+        background: #1d4ed8;
+      }
+
+      /* ================= หน้าต่าง Popup รายละเอียด ================= */
+      .info-popup {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 340px;
+        max-width: calc(100vw - 40px);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e2e8f0;
+        padding: 18px;
+        z-index: 20;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+
+      .info-popup.open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .popup-badge {
+        font-size: 11px;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+
+      .close-btn {
+        background: #f1f5f9;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .close-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+      .popup-title {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      /* กล่องแสดงรูปภาพ หรือ วิดีโอ */
+      .popup-media {
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: #f1f5f9;
+        display: none; /* ซ่อนไว้ถ้าจุดนั้นยังไม่มีรูป/วิดีโอ */
+      }
+
+      .popup-media img, .popup-media video {
+        width: 100%;
+        max-height: 190px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .popup-desc {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #475569;
+        margin: 0 0 14px 0;
+      }
+
+      .audio-btn {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #1e293b;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s;
+      }
+
+      .audio-btn:hover { background: #e2e8f0; }
+      .audio-btn.playing {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #dc2626;
+      }
+
+      #ar-button {
+        background-color: #ffffff;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 8px 16px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        color: #2563eb;
+        border-radius: 20px;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+      }
+
+      /* ปรับตำแหน่ง Popup บนจอมือถือให้อยู่ด้านบนไม่ทับแถบปุ่ม */
+      @media (max-width: 640px) {
+        .info-popup {
+          top: 12px;
+          right: 12px;
+          left: 12px;
+          width: auto;
+        }
+      }
+    </style>
   </head>
   <body>
-    <!-- <model-viewer> HTML element -->
-    <model-viewer src="Standardcncmodel.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1" exposure="1.33" camera-orbit="178.9deg 71.63deg 14.35m" field-of-view="26.26deg" min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 81deg auto">
-      <button class="Hotspot" slot="hotspot-2" data-position="2.4067832064415735m 0.06695058431680578m 0.05028558408372019m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
+
+    <model-viewer 
+      id="cnc-viewer"
+      src="Standardcncmodel.glb" 
+      ar 
+      ar-modes="webxr scene-viewer quick-look" 
+      camera-controls 
+      touch-action="pan-y"
+      tone-mapping="neutral" 
+      shadow-intensity="1" 
+      exposure="1.33" 
+      camera-orbit="178.9deg 71.63deg 14.35m" 
+      field-of-view="26.26deg" 
+      min-camera-orbit="auto 0deg auto" 
+      max-camera-orbit="auto 81deg auto">
+
+      <!-- พิกัด Hotspot ทั้ง 8 จุดตามค่าที่คุณตั้งไว้ -->
+      <button class="Hotspot" slot="hotspot-2" data-id="hotspot-2" data-position="2.4067832064415735m 0.06695058431680578m 0.05028558408372019m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Home sensor Y</div>
-      </button><button class="Hotspot" slot="hotspot-3" data-position="1.2653517841707542m 0.20518845673994296m 1.0534260374353885m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-3" data-id="hotspot-3" data-position="1.2653517841707542m 0.20518845673994296m 1.0534260374353885m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Tool Setter</div>
-      </button><button class="Hotspot" slot="hotspot-4" data-position="0.26566021632043346m 0.19047419918133118m 2.255243115692978m" data-normal="8.88178360791161e-16m 0.999999999999716m 7.537811943512186e-7m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-4" data-id="hotspot-4" data-position="0.26566021632043346m 0.19047419918133118m 2.255243115692978m" data-normal="8.88178360791161e-16m 0.999999999999716m 7.537811943512186e-7m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Work</div>
-      </button><button class="Hotspot" slot="hotspot-5" data-position="0.21904306679239408m 0.5918468484531553m 3.1320372908512737m" data-normal="0.0013835367812601103m -0.0000011624310226153404m -0.9999990429118538m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-5" data-id="hotspot-5" data-position="0.21904306679239408m 0.5918468484531553m 3.1320372908512737m" data-normal="0.0013835367812601103m -0.0000011624310226153404m -0.9999990429118538m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">3Dprobe</div>
-      </button><button class="Hotspot" slot="hotspot-6" data-position="0.37951888019162605m 0.7259307390041644m 3.321068921913396m" data-normal="0.42767429438823606m 6.813676248554876e-7m -0.9039329056512215m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-6" data-id="hotspot-6" data-position="0.37951888019162605m 0.7259307390041644m 3.321068921913396m" data-normal="0.42767429438823606m 6.813676248554876e-7m -0.9039329056512215m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Tool</div>
-      </button><button class="Hotspot" slot="hotspot-7" data-position="0.3615248857106359m 1.493332158447763m 2.9521959318624926m" data-normal="-8.269454114525494e-16m 7.537811943512186e-7m -0.999999999999716m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-7" data-id="hotspot-7" data-position="0.3615248857106359m 1.493332158447763m 2.9521959318624926m" data-normal="-8.269454114525494e-16m 7.537811943512186e-7m -0.999999999999716m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Camera</div>
-      </button><button class="Hotspot" slot="hotspot-8" data-position="2.6361515103362034m 1.8167653455235562m 4.119100644365791m" data-normal="0.11202147648856658m 7.490367339822042e-7m -0.9937057858364118m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-8" data-id="hotspot-8" data-position="2.6361515103362034m 1.8167653455235562m 4.119100644365791m" data-normal="0.11202147648856658m 7.490367339822042e-7m -0.9937057858364118m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Home sensor X</div>
-      </button><button class="Hotspot" slot="hotspot-9" data-position="0.5427344125835531m 3.0891896220293895m 3.636501755594321m" data-normal="-2.3310352154662366e-17m 0.6672441503135572m -0.7448390724662202m" data-visibility-attribute="visible">
+      </button>
+      <button class="Hotspot" slot="hotspot-9" data-id="hotspot-9" data-position="0.5427344125835531m 3.0891896220293895m 3.636501755594321m" data-normal="-2.3310352154662366e-17m 0.6672441503135572m -0.7448390724662202m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Home sensor Z</div>
       </button>
+
       <div class="progress-bar hide" slot="progress-bar">
           <div class="update-bar"></div>
       </div>
+
       <button slot="ar-button" id="ar-button">
-          View in your space
+          📱 ดูขนาดจริง (AR)
       </button>
-      <div id="ar-prompt">
-          <img src="ar_hand_prompt.png">
+    </model-viewer>
+
+    <!-- หน้าต่าง Popup แสดงข้อมูล รูปภาพ วิดีโอ และเสียง -->
+    <div id="info-popup" class="info-popup">
+      <div class="popup-header">
+        <span id="popup-step" class="popup-badge">จุดที่ 1 / 8</span>
+        <button class="close-btn" onclick="closePopup()" title="ปิดหน้าต่าง">✕</button>
       </div>
-    </model-viewer>  
-    <script src="script.js"></script>
-    <!-- Loads <model-viewer> for browsers: -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.4.0/model-viewer.min.js"></script>
+      <h3 id="popup-title" class="popup-title">ชื่อชิ้นส่วน</h3>
+      <div id="popup-media" class="popup-media"></div>
+      <p id="popup-desc" class="popup-desc">รายละเอียดชิ้นส่วน...</p>
+      <button id="audio-btn" class="audio-btn" onclick="toggleAudio()">
+        🔊 ฟังเสียงบรรยาย
+      </button>
+    </div>
+
+    <!-- แถบปุ่มควบคุมด้านล่าง -->
+    <div class="control-bar">
+      <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
+        👁️ ซ่อนจุดอธิบาย
+      </button>
+      <button class="ctrl-btn" onclick="prevHotspot()">
+        ◀ ก่อนหน้า
+      </button>
+      <button class="ctrl-btn primary" onclick="nextHotspot()">
+        ถัดไป ▶
+      </button>
+      <button class="ctrl-btn" onclick="resetCamera()">
+        🔄 รีเซ็ตมุมมอง
+      </button>
+    </div>
+
+    <script>
+      // =========================================================================
+      // ส่วนตั้งค่าข้อมูล (แก้ไขและต่อยอดเนื้อหา รูปภาพ วิดีโอ เสียง ได้ที่ตรงนี้จุดเดียว!)
+      // =========================================================================
+      const hotspotData = [
+        {
+          id: "hotspot-2",
+          title: "Home sensor Y",
+          desc: "เซ็นเซอร์ตรวจจับตำแหน่งเริ่มต้นของแกน Y ช่วยกำหนดจุดอ้างอิงศูนย์ (Zero Point) ให้เครื่องจักรทำงานได้อย่างแม่นยำทุกครั้ง",
+          orbit: "160deg 65deg 5.5m",
+          mediaType: "", // ใส่ "image" (รวมถึง .gif) หรือ "video" (สำหรับ .mp4)
+          mediaUrl: "",  // ใส่ชื่อไฟล์ที่อัปโหลดบน GitHub เช่น "images/sensor-y.gif" หรือลิงก์รูป
+          audioUrl: ""   // ใส่ชื่อไฟล์เสียง .mp3 เช่น "audio/sensor-y.mp3" (ถ้าเว้นว่าง ระบบจะอ่านข้อความให้ฟังอัตโนมัติ)
+        },
+        {
+          id: "hotspot-3",
+          title: "Tool Setter",
+          desc: "อุปกรณ์วัดความยาวดอกกัดอัตโนมัติ ช่วยชดเชยค่าความยาวทูลหลังเปลี่ยนดอกกัด ลดความผิดพลาดจากการตั้งค่าด้วยมือ",
+          orbit: "175deg 55deg 4.5m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-4",
+          title: "Work (พื้นที่จับยึดชิ้นงาน)",
+          desc: "โต๊ะทำงานและชุดจับยึดชิ้นงาน ออกแบบให้รองรับแรงสั่นสะเทือนขณะกัดงานความเร็วสูง รักษาความเรียบเนียนของผิวชิ้นงาน",
+          orbit: "180deg 50deg 4.5m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-5",
+          title: "3D Probe",
+          desc: "หัววัดชิ้นงาน 3 มิติ ใช้สำหรับหาขอบชิ้นงาน หาจุดศูนย์กลางรูเจาะ และตรวจสอบความเอียงของชิ้นงานก่อนเริ่มกัดจริง",
+          orbit: "195deg 70deg 3.8m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-6",
+          title: "Tool (ชุดหัวกัด Spindle)",
+          desc: "ชุดจับดอกกัดความเร็วสูง รองรับการเปลี่ยนทูลได้หลากหลายประเภท ทั้งดอกกัดหยาบ กัดละเอียด และดอกเจาะ",
+          orbit: "160deg 70deg 3.8m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-7",
+          title: "Camera (กล้องตรวจสอบชิ้นงาน)",
+          desc: "กล้องความละเอียดสูงติดตั้งบริเวณหัวกัด ช่วยให้ผู้ควบคุมมองเห็นตำแหน่งการทำงานจริงและตรวจสอบแนวการตัดผ่านหน้าจอ",
+          orbit: "180deg 75deg 3.8m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-8",
+          title: "Home sensor X",
+          desc: "เซ็นเซอร์ตรวจจับตำแหน่งเริ่มต้นของแกน X บนคานขวาง ควบคุมระยะการเคลื่อนที่ซ้าย-ขวาให้ปลอดภัยและแม่นยำ",
+          orbit: "150deg 75deg 5.5m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        },
+        {
+          id: "hotspot-9",
+          title: "Home sensor Z",
+          desc: "เซ็นเซอร์ตรวจจับตำแหน่งสูงสุดของแกน Z ป้องกันหัวกัดเคลื่อนที่เกินระยะและกำหนดความสูงอ้างอิงเริ่มต้น",
+          orbit: "180deg 75deg 5.5m",
+          mediaType: "",
+          mediaUrl: "",
+          audioUrl: ""
+        }
+      ];
+
+      // =========================================================================
+      // ระบบการทำงานเบื้องหลัง (ไม่ต้องแก้ไขส่วนนี้)
+      // =========================================================================
+      const viewer = document.getElementById('cnc-viewer');
+      const popup = document.getElementById('info-popup');
+      const defaultOrbit = "178.9deg 71.63deg 14.35m";
+      let currentIndex = -1;
+      let hotspotsVisible = true;
+      let currentAudio = null;
+      let isPlaying = false;
+
+      // แถบโหลดโมเดล
+      viewer.addEventListener('progress', (event) => {
+        const progressBar = event.target.querySelector('.progress-bar');
+        const updatingBar = event.target.querySelector('.update-bar');
+        updatingBar.style.width = `${event.detail.totalProgress * 100}%`;
+        if (event.detail.totalProgress === 1) {
+          progressBar.classList.add('hide');
+        } else {
+          progressBar.classList.remove('hide');
+        }
+      });
+
+      // ผูกคำสั่งคลิกให้กับปุ่ม Hotspot ทุกจุด
+      document.querySelectorAll('.Hotspot').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const idx = hotspotData.findIndex(item => item.id === id);
+          if (idx !== -1) selectHotspot(idx);
+        });
+      });
+
+      // ฟังก์ชันเลือกจุด Hotspot และซูมกล้อง
+      function selectHotspot(index) {
+        stopAudio();
+        currentIndex = index;
+        const data = hotspotData[index];
+        const btn = document.querySelector(`.Hotspot[data-id="${data.id}"]`);
+
+        // ไฮไลต์ปุ่มที่เลือก
+        document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
+        if (btn) {
+          btn.classList.add('active');
+          viewer.cameraTarget = btn.getAttribute('data-position');
+          viewer.cameraOrbit = data.orbit;
+        }
+
+        // อัปเดตข้อมูลใน Popup
+        document.getElementById('popup-step').textContent = `จุดที่ ${index + 1} / ${hotspotData.length}`;
+        document.getElementById('popup-title').textContent = data.title;
+        document.getElementById('popup-desc').textContent = data.desc;
+
+        // จัดการรูปภาพ / GIF / วิดีโอ
+        const mediaBox = document.getElementById('popup-media');
+        mediaBox.innerHTML = '';
+        if (data.mediaUrl && data.mediaType === 'video') {
+          mediaBox.innerHTML = `<video src="${data.mediaUrl}" autoplay loop muted playsinline></video>`;
+          mediaBox.style.display = 'block';
+        } else if (data.mediaUrl) {
+          mediaBox.innerHTML = `<img src="${data.mediaUrl}" alt="${data.title}">`;
+          mediaBox.style.display = 'block';
+        } else {
+          mediaBox.style.display = 'none';
+        }
+
+        popup.classList.add('open');
+      }
+
+      // ปุ่มเลื่อนถัดไป / ก่อนหน้า
+      function nextHotspot() {
+        if (!hotspotsVisible) toggleHotspots();
+        const nextIdx = (currentIndex + 1) % hotspotData.length;
+        selectHotspot(nextIdx);
+      }
+
+      function prevHotspot() {
+        if (!hotspotsVisible) toggleHotspots();
+        const prevIdx = (currentIndex - 1 + hotspotData.length) % hotspotData.length;
+        selectHotspot(prevIdx);
+      }
+
+      // ปุ่มแสดง / ซ่อน Hotspot
+      function toggleHotspots() {
+        hotspotsVisible = !hotspotsVisible;
+        const btn = document.getElementById('toggle-hs-btn');
+        if (hotspotsVisible) {
+          viewer.classList.remove('hide-hotspots');
+          btn.innerHTML = '👁️ ซ่อนจุดอธิบาย';
+        } else {
+          viewer.classList.add('hide-hotspots');
+          btn.innerHTML = '👁️ แสดงจุดอธิบาย';
+          closePopup();
+        }
+      }
+
+      // ปิด Popup และรีเซ็ตมุมกล้อง
+      function closePopup() {
+        stopAudio();
+        popup.classList.remove('open');
+        document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
+      }
+
+      function resetCamera() {
+        closePopup();
+        currentIndex = -1;
+        viewer.cameraTarget = "auto auto auto";
+        viewer.cameraOrbit = defaultOrbit;
+      }
+
+      // ระบบเสียงบรรยาย (รองรับทั้งไฟล์ MP3 และเสียงอ่านภาษาไทยอัตโนมัติ)
+      function toggleAudio() {
+        if (isPlaying) {
+          stopAudio();
+          return;
+        }
+        if (currentIndex === -1) return;
+        const data = hotspotData[currentIndex];
+        const audioBtn = document.getElementById('audio-btn');
+
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioBtn.innerHTML = '⏹️ หยุดเสียงบรรยาย';
+
+        if (data.audioUrl) {
+          currentAudio = new Audio(data.audioUrl);
+          currentAudio.play();
+          currentAudio.onended = () => stopAudio();
+        } else if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(`${data.title}. ${data.desc}`);
+          utterance.lang = 'th-TH';
+          utterance.rate = 1.0;
+          utterance.onend = () => stopAudio();
+          window.speechSynthesis.speak(utterance);
+        }
+      }
+
+      function stopAudio() {
+        isPlaying = false;
+        const audioBtn = document.getElementById('audio-btn');
+        audioBtn.classList.remove('playing');
+        audioBtn.innerHTML = '🔊 ฟังเสียงบรรยาย';
+
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      }
+    </script>
   </body>
 </html>
