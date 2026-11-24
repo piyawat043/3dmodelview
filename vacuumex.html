@@ -31,9 +31,10 @@
       .Hotspot {
         --line-w: 40px;
         --offset-y: 0px;
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(255, 255, 255, 0.85);
         border-radius: 50%;
-        border: 2px solid rgba(37, 99, 235, 0.85);
+        border: 2px solid #2563eb;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
         box-sizing: border-box;
         cursor: pointer;
         height: 15px;
@@ -41,6 +42,12 @@
         padding: 0;
         position: relative;
         transition: all 0.3s ease;
+        z-index: 5;
+      }
+
+      /* แม้จุดจะอยู่หลังชิ้นงานอื่น ก็ยังให้มองเห็นได้ชัดเจนไม่หายไป */
+      .Hotspot:not([data-visible]) {
+        opacity: 0.85;
       }
 
       .Hotspot:hover, .Hotspot.active {
@@ -48,19 +55,13 @@
         border-color: #ffffff;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
         transform: scale(1.25);
+        opacity: 1 !important;
         z-index: 20;
       }
 
-      /* จางจุดอื่นลงเมื่อกำลังโฟกัสจุดใดจุดหนึ่ง เพื่อไม่ให้กล่องซ้อนทับกัน */
+      /* จางจุดอื่นลงเมื่อกำลังคลิกโฟกัสจุดใดจุดหนึ่ง */
       model-viewer.has-focus .Hotspot:not(.active) {
         opacity: 0.2;
-        pointer-events: auto;
-      }
-
-      .Hotspot:not([data-visible]) {
-        background: transparent;
-        border: 1.5px solid rgba(203, 213, 225, 0.5);
-        pointer-events: none;
       }
 
       /* เส้นชี้จากจุดบนชิ้นงานออกไปทางขวา */
@@ -70,25 +71,25 @@
         left: 100%;
         top: 50%;
         width: var(--line-w);
-        height: 1px;
-        background: linear-gradient(90deg, rgba(37, 99, 235, 0.7), rgba(148, 163, 184, 0.35));
+        height: 1.5px;
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.8), rgba(148, 163, 184, 0.45));
         pointer-events: none;
         transition: all 0.35s ease;
       }
 
       /* ================= กล่องข้อความโปร่งใส (อยู่ทางขวาของชิ้นงาน) ================= */
       .HotspotAnnotation {
-        background: rgba(255, 255, 255, 0.52);
+        background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
-        border: 1px solid rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.85);
         border-radius: 10px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         color: #1e293b;
         display: block;
         font-family: 'Prompt', sans-serif;
         font-size: 10.5px;
-        font-weight: 300;
+        font-weight: 400;
         line-height: 1.35;
         left: calc(100% + var(--line-w));
         padding: 5px 8px;
@@ -109,7 +110,7 @@
         transition: font-size 0.35s ease;
       }
 
-      /* ================= ขนาดรูปและวิดีโอ (สถานะปกติ - กะทัดรัด) ================= */
+      /* ================= ขนาดรูปและวิดีโอ (สถานะปกติ) ================= */
       .media-row {
         display: flex;
         gap: 5px;
@@ -118,48 +119,42 @@
 
       .media-row img,
       .media-row video {
-        width: 64px;
-        height: 42px;
+        width: 56px;
+        height: 38px;
         object-fit: cover;
         border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.85);
-        background-color: rgba(241, 245, 249, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        background-color: rgba(241, 245, 249, 0.5);
         display: block;
         transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      /* ================= ขยายขนาดเมื่อคลิกโฟกัส (Active State) ================= */
+      /* ================= ขยายขนาดเมื่อคลิกโฟกัส ================= */
       .Hotspot.active .HotspotAnnotation {
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(37, 99, 235, 0.35);
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
-        font-size: 13px;
-        line-height: 1.5;
-        padding: 10px 12px;
-        top: 50%; /* จัดกึ่งกลางแนวตั้งเมื่อขยายใหญ่ */
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(37, 99, 235, 0.45);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+        font-size: 12.5px;
+        line-height: 1.45;
+        padding: 9px 11px;
+        top: 50%;
       }
 
       .Hotspot.active .HotspotAnnotation strong {
-        font-size: 14.5px;
-        margin-bottom: 4px;
+        font-size: 14px;
+        margin-bottom: 3px;
       }
 
       .Hotspot.active .media-row {
-        gap: 8px;
-        margin-top: 8px;
+        gap: 6px;
+        margin-top: 6px;
       }
 
       .Hotspot.active .media-row img,
       .Hotspot.active .media-row video {
-        width: 145px;  /* ขยายกว้างขึ้นเมื่อโฟกัส */
-        height: 92px;  /* ขยายสูงขึ้นเมื่อโฟกัส */
+        width: 125px;
+        height: 80px;
         border-radius: 6px;
-      }
-
-      .Hotspot:not([data-visible]) > *,
-      .Hotspot:not([data-visible])::before {
-        opacity: 0;
-        pointer-events: none;
       }
 
       /* ================= แถบโหลดโมเดล ================= */
@@ -185,34 +180,31 @@
 
       /* ปุ่ม AR มุมซ้ายล่าง */
       #ar-button {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(4px);
         position: absolute;
-        bottom: 16px;
-        left: 16px;
-        padding: 6px 12px;
+        bottom: 14px;
+        left: 14px;
+        padding: 5px 10px;
         font-family: 'Prompt', sans-serif;
         font-size: 11px;
         color: #334155;
-        border-radius: 12px;
-        border: 1px solid rgba(203, 213, 225, 0.5);
+        border-radius: 10px;
+        border: 1px solid rgba(203, 213, 225, 0.7);
         cursor: pointer;
       }
 
-      /* ปรับสัดส่วนอัตโนมัติบนจอมือถือ */
       @media (max-width: 640px) {
         .Hotspot::before { width: calc(var(--line-w) * 0.45); }
         .HotspotAnnotation { left: calc(100% + (var(--line-w) * 0.45)); }
         .Hotspot.active .media-row img,
-        .Hotspot.active .media-row video {
-          width: 105px;
-          height: 68px;
-        }
+        .Hotspot.active .media-row video { width: 95px; height: 62px; }
       }
     </style>
   </head>
   <body>
 
+    <!-- ตั้ง camera-target เริ่มต้นให้ชิ้นงานเยื้องซ้ายเล็กน้อย เปิดพื้นที่ด้านขวา -->
     <model-viewer 
       id="vacuum-viewer"
       src="https://piyawat043.github.io/3dmodelview/vacuum_ex.glb" 
@@ -225,19 +217,21 @@
       exposure="1.28" 
       shadow-softness="1" 
       environment-image="legacy"
-      camera-orbit="3.778deg 74.8deg 2.674m" 
+      camera-target="0.14m -0.03m -0.42m"
+      camera-orbit="3.778deg 74.8deg 2.85m" 
       field-of-view="20.11deg" 
       min-camera-orbit="-25deg 5deg auto" 
       max-camera-orbit="25deg 82deg auto">
 
-      <!-- จุดที่ 2 (Step 1) : 2.png และ 2.mp4 (อยู่ด้านบนขวา) -->
+      <!-- Step 1 : 2.png และ 2.mp4 -->
       <button class="Hotspot" slot="hotspot-3" 
-        style="--line-w: 225px; --offset-y: -62px;"
+        style="--line-w: 145px; --offset-y: -75px;"
         data-position="-0.09975788658298201m -0.04175009352813376m -0.5848926871429172m" 
-        data-focus-target="0.16m -0.04m -0.58m"
-        data-orbit="-4deg 72deg 1.85m">
+        data-normal="0.0020909524678074443m 0.9999842891292221m 0.005200904969524357m"
+        data-focus-target="0.14m -0.04m -0.58m"
+        data-orbit="-4deg 72deg 1.95m">
           <div class="HotspotAnnotation">
-            <strong>Step 1: วางวัสดุ</strong>- วางเอียง<br>- วัด 6 จุด
+            <strong>Step 1: วางวัสดุ</strong>- วางเอียง / วัด 6 จุด
             <div class="media-row">
               <img src="2.png" alt="2" onerror="this.style.display='none'">
               <video src="2.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -245,14 +239,15 @@
           </div>
       </button>
 
-      <!-- จุดที่ 3 (Step 2) : 3.png และ 3.mp4 (อยู่ถัดลงมาทางขวา) -->
+      <!-- Step 2 : 3.png และ 3.mp4 -->
       <button class="Hotspot" slot="hotspot-4" 
-        style="--line-w: 75px; --offset-y: 12px;"
+        style="--line-w: 55px; --offset-y: -15px;"
         data-position="0.11037490437446362m -0.04221068658330552m -0.5808154453568689m" 
+        data-normal="0.0020909524678070844m 0.999984289129222m 0.005200904969524365m"
         data-focus-target="0.24m -0.04m -0.58m"
-        data-orbit="4deg 72deg 1.85m">
+        data-orbit="4deg 72deg 1.95m">
           <div class="HotspotAnnotation">
-            <strong>Step 2: พลิกชิ้นงาน</strong>- วางเอียง<br>- วัด 6 จุด
+            <strong>Step 2: พลิกชิ้นงาน</strong>- วางเอียง / วัด 6 จุด
             <div class="media-row">
               <img src="3.png" alt="3" onerror="this.style.display='none'">
               <video src="3.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -260,14 +255,15 @@
           </div>
       </button>
 
-      <!-- จุดที่ 4 (Step 3) : 4.png และ 4.mp4 (อยู่ถัดลงมาทางขวา) -->
+      <!-- Step 3 : 4.png และ 4.mp4 -->
       <button class="Hotspot" slot="hotspot-5" 
-        style="--line-w: 205px; --offset-y: 88px;"
+        style="--line-w: 135px; --offset-y: 45px;"
         data-position="-0.06886423366442135m -0.01330708910611883m -0.4082119037381376m" 
-        data-focus-target="0.16m -0.02m -0.41m"
-        data-orbit="0deg 68deg 1.8m">
+        data-normal="-0.21049075738726505m -0.00464427252279961m 0.9775848156488877m"
+        data-focus-target="0.15m -0.02m -0.41m"
+        data-orbit="0deg 68deg 1.9m">
           <div class="HotspotAnnotation">
-            <strong>Step 3: เจาะสัน</strong>- วางเอียง<br>- วัด 6 จุด
+            <strong>Step 3: เจาะสัน</strong>- วางเอียง / วัด 6 จุด
             <div class="media-row">
               <img src="4.png" alt="4" onerror="this.style.display='none'">
               <video src="4.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -275,12 +271,13 @@
           </div>
       </button>
 
-      <!-- จุดที่ 1 (ตัวอย่างสำเร็จ) : 1.png และ 1.mp4 (อยู่ด้านล่างขวา) -->
+      <!-- ตัวอย่างสำเร็จ : 1.png และ 1.mp4 -->
       <button class="Hotspot" slot="hotspot-1" 
-        style="--line-w: 48px; --offset-y: 112px;"
+        style="--line-w: 40px; --offset-y: 88px;"
         data-position="0.14728438389019627m -0.04420307828119793m -0.2125742962494918m" 
+        data-normal="0.0020909524678074756m 0.9999842891292221m 0.005200904969524393m"
         data-focus-target="0.26m -0.04m -0.21m"
-        data-orbit="2deg 72deg 1.75m">
+        data-orbit="2deg 72deg 1.85m">
           <div class="HotspotAnnotation">
             <strong>ตัวอย่างสำเร็จ</strong>ชิ้นงานที่เสร็จสมบูรณ์
             <div class="media-row">
@@ -300,9 +297,9 @@
 
     <script>
       const viewer = document.getElementById('vacuum-viewer');
-      const defaultOrbit = "3.778deg 74.8deg 2.674m";
+      const defaultTarget = "0.14m -0.03m -0.42m";
+      const defaultOrbit = "3.778deg 74.8deg 2.85m";
 
-      // แถบโหลดโมเดล
       viewer.addEventListener('progress', (event) => {
         const progressBar = event.target.querySelector('.progress-bar');
         const updatingBar = event.target.querySelector('.update-bar');
@@ -311,22 +308,17 @@
         else progressBar.classList.remove('hide');
       });
 
-      // ฟังก์ชันรีเซ็ตกลับภาพรวม
       function resetView() {
         viewer.classList.remove('has-focus');
         document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
-        viewer.cameraTarget = "auto auto auto";
+        viewer.cameraTarget = defaultTarget;
         viewer.cameraOrbit = defaultOrbit;
       }
 
-      // คลิกที่จุดเพื่อเลื่อนชิ้นงานไปทางซ้าย และขยายกล่องทางขวา
       document.querySelectorAll('.Hotspot').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const isAlreadyActive = btn.classList.contains('active');
-
-          // ถ้ากดจุดเดิมซ้ำ ให้ย่อกลับภาพรวม
-          if (isAlreadyActive) {
+          if (btn.classList.contains('active')) {
             resetView();
             return;
           }
@@ -335,20 +327,15 @@
           btn.classList.add('active');
           viewer.classList.add('has-focus');
 
-          // ใช้ data-focus-target ที่ชดเชยไปทางขวา เพื่อให้ชิ้นงานขยับไปอยู่ฝั่งซ้าย
           const focusTarget = btn.getAttribute('data-focus-target') || btn.getAttribute('data-position');
           const orbit = btn.getAttribute('data-orbit');
-          
           if (focusTarget) viewer.cameraTarget = focusTarget;
           if (orbit) viewer.cameraOrbit = orbit;
         });
       });
-      
-      // ดับเบิลคลิกพื้นที่ว่างเพื่อรีเซ็ตมุมกล้อง
+
       viewer.addEventListener('dblclick', (e) => {
-        if (!e.target.closest('.Hotspot')) {
-          resetView();
-        }
+        if (!e.target.closest('.Hotspot')) resetView();
       });
     </script>
   </body>
