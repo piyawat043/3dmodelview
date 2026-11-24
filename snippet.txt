@@ -1,0 +1,28 @@
+<model-viewer src="Standardcncmodel.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1" exposure="1.33" camera-orbit="178.9deg 71.63deg 14.35m" field-of-view="26.26deg" min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 81deg auto">
+    <button class="Hotspot" slot="hotspot-2" data-position="2.4067832064415735m 0.06695058431680578m 0.05028558408372019m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Home sensor Y</div>
+    </button><button class="Hotspot" slot="hotspot-3" data-position="1.2653517841707542m 0.20518845673994296m 1.0534260374353885m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Tool Setter</div>
+    </button><button class="Hotspot" slot="hotspot-4" data-position="0.26566021632043346m 0.19047419918133118m 2.255243115692978m" data-normal="8.88178360791161e-16m 0.999999999999716m 7.537811943512186e-7m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Work</div>
+    </button><button class="Hotspot" slot="hotspot-5" data-position="0.21904306679239408m 0.5918468484531553m 3.1320372908512737m" data-normal="0.0013835367812601103m -0.0000011624310226153404m -0.9999990429118538m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">3Dprobe</div>
+    </button><button class="Hotspot" slot="hotspot-6" data-position="0.37951888019162605m 0.7259307390041644m 3.321068921913396m" data-normal="0.42767429438823606m 6.813676248554876e-7m -0.9039329056512215m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Tool</div>
+    </button><button class="Hotspot" slot="hotspot-7" data-position="0.3615248857106359m 1.493332158447763m 2.9521959318624926m" data-normal="-8.269454114525494e-16m 7.537811943512186e-7m -0.999999999999716m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Camera</div>
+    </button><button class="Hotspot" slot="hotspot-8" data-position="2.6361515103362034m 1.8167653455235562m 4.119100644365791m" data-normal="0.11202147648856658m 7.490367339822042e-7m -0.9937057858364118m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Home sensor X</div>
+    </button><button class="Hotspot" slot="hotspot-9" data-position="0.5427344125835531m 3.0891896220293895m 3.636501755594321m" data-normal="-2.3310352154662366e-17m 0.6672441503135572m -0.7448390724662202m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Home sensor Z</div>
+    </button>
+    <div class="progress-bar hide" slot="progress-bar">
+        <div class="update-bar"></div>
+    </div>
+    <button slot="ar-button" id="ar-button">
+        View in your space
+    </button>
+    <div id="ar-prompt">
+        <img src="https://modelviewer.dev/shared-assets/icons/hand.png">
+    </div>
+</model-viewer>
