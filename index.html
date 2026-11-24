@@ -8,9 +8,7 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
 
-      :not(:defined) > * {
-        display: none;
-      }
+      :not(:defined) > * { display: none; }
 
       html, body {
         margin: 0;
@@ -56,7 +54,6 @@
         pointer-events: none;
       }
 
-      /* ซ่อน Hotspot ทั้งหมดเมื่อกดปุ่มปิด */
       model-viewer.hide-hotspots .Hotspot {
         opacity: 0 !important;
         pointer-events: none !important;
@@ -118,46 +115,89 @@
         transition: width 0.3s;
       }
 
-      /* ================= แถบปุ่มควบคุมด้านล่าง ================= */
-      .control-bar {
+      /* ================= เมนูควบคุมมุมบนซ้าย (ยุบเริ่มต้น) ================= */
+      .side-menu {
         position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 16px;
+        left: 16px;
+        z-index: 25;
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(8px);
-        padding: 8px 14px;
-        border-radius: 50px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-        border: 1px solid #e2e8f0;
-        z-index: 10;
-        max-width: 95vw;
-        overflow-x: auto;
       }
 
-      .ctrl-btn {
-        background: #ffffff;
+      .menu-toggle {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(8px);
         border: 1px solid #cbd5e1;
-        color: #334155;
-        padding: 7px 14px;
-        border-radius: 20px;
+        color: #1e293b;
+        padding: 8px 14px;
+        border-radius: 12px;
         font-family: 'Prompt', sans-serif;
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .menu-toggle:hover {
+        background: #ffffff;
+        border-color: #94a3b8;
+      }
+
+      .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(8px);
+        padding: 8px;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border: 1px solid #e2e8f0;
+        width: 156px;
+        /* สถานะเริ่มต้น: ซ่อนและยุบไว้ */
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top left;
+        pointer-events: none;
+        visibility: hidden;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .menu-list.expanded {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+        visibility: visible;
+      }
+
+      .ctrl-btn {
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .ctrl-btn:hover {
         background: #f1f5f9;
-        border-color: #94a3b8;
+        border-color: #cbd5e1;
       }
 
       .ctrl-btn.primary {
@@ -173,10 +213,10 @@
       /* ================= หน้าต่าง Popup รายละเอียด ================= */
       .info-popup {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 340px;
-        max-width: calc(100vw - 40px);
+        top: 16px;
+        right: 16px;
+        width: 330px;
+        max-width: calc(100vw - 32px);
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(10px);
         border-radius: 16px;
@@ -196,112 +236,38 @@
         pointer-events: auto;
       }
 
-      .popup-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-
-      .popup-badge {
-        font-size: 11px;
-        background: #eff6ff;
-        color: #2563eb;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-weight: 600;
-      }
-
-      .close-btn {
-        background: #f1f5f9;
-        border: none;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 16px;
-        color: #64748b;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+      .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+      .popup-badge { font-size: 11px; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+      .close-btn { background: #f1f5f9; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; color: #64748b; display: flex; align-items: center; justify-content: center; }
       .close-btn:hover { background: #e2e8f0; color: #0f172a; }
+      .popup-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #0f172a; }
 
-      .popup-title {
-        margin: 0 0 10px 0;
-        font-size: 18px;
-        font-weight: 600;
-        color: #0f172a;
-      }
+      .popup-media { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; display: none; }
+      .popup-media img, .popup-media video { width: 100%; max-height: 180px; object-fit: cover; display: block; }
+      .popup-desc { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 14px 0; }
 
-      /* กล่องแสดงรูปภาพ หรือ วิดีโอ */
-      .popup-media {
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 12px;
-        background: #f1f5f9;
-        display: none; /* ซ่อนไว้ถ้าจุดนั้นยังไม่มีรูป/วิดีโอ */
-      }
-
-      .popup-media img, .popup-media video {
-        width: 100%;
-        max-height: 190px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .popup-desc {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #475569;
-        margin: 0 0 14px 0;
-      }
-
-      .audio-btn {
-        width: 100%;
-        padding: 8px 12px;
-        border-radius: 10px;
-        border: 1px solid #cbd5e1;
-        background: #f8fafc;
-        color: #1e293b;
-        font-family: 'Prompt', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: all 0.2s;
-      }
-
+      .audio-btn { width: 100%; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; font-family: 'Prompt', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
       .audio-btn:hover { background: #e2e8f0; }
-      .audio-btn.playing {
-        background: #fef2f2;
-        border-color: #fca5a5;
-        color: #dc2626;
-      }
+      .audio-btn.playing { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
       #ar-button {
         background-color: #ffffff;
         position: absolute;
-        top: 20px;
-        left: 20px;
-        padding: 8px 16px;
+        bottom: 16px;
+        left: 16px;
+        padding: 8px 14px;
         font-family: 'Prompt', sans-serif;
         font-size: 13px;
         color: #2563eb;
-        border-radius: 20px;
+        border-radius: 12px;
         border: 1px solid #cbd5e1;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         cursor: pointer;
       }
 
-      /* ปรับตำแหน่ง Popup บนจอมือถือให้อยู่ด้านบนไม่ทับแถบปุ่ม */
       @media (max-width: 640px) {
         .info-popup {
-          top: 12px;
+          top: 62px;
           right: 12px;
           left: 12px;
           width: auto;
@@ -313,7 +279,7 @@
 
     <model-viewer 
       id="cnc-viewer"
-      src="Standardcncmodel.glb" 
+      src="https://piyawat043.github.io/3dmodelview/Standardcncmodel.glb" 
       ar 
       ar-modes="webxr scene-viewer quick-look" 
       camera-controls 
@@ -326,7 +292,6 @@
       min-camera-orbit="auto 0deg auto" 
       max-camera-orbit="auto 81deg auto">
 
-      <!-- พิกัด Hotspot ทั้ง 8 จุดตามค่าที่คุณตั้งไว้ -->
       <button class="Hotspot" slot="hotspot-2" data-id="hotspot-2" data-position="2.4067832064415735m 0.06695058431680578m 0.05028558408372019m" data-normal="1m -8.881777374550085e-16m -8.269460809444598e-16m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">Home sensor Y</div>
       </button>
@@ -361,6 +326,27 @@
       </button>
     </model-viewer>
 
+    <!-- เมนูควบคุมมุมบนซ้าย (เริ่มต้นยุบไว้) -->
+    <div class="side-menu">
+      <button id="menu-toggle-btn" class="menu-toggle" onclick="toggleMenu()">
+        ☰ เครื่องมือ
+      </button>
+      <div id="menu-list" class="menu-list">
+        <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
+          👁️ ซ่อนจุดอธิบาย
+        </button>
+        <button class="ctrl-btn" onclick="prevHotspot()">
+          ◀ ก่อนหน้า
+        </button>
+        <button class="ctrl-btn primary" onclick="nextHotspot()">
+          ▶ ถัดไป
+        </button>
+        <button class="ctrl-btn" onclick="resetCamera()">
+          🔄 รีเซ็ตมุมมอง
+        </button>
+      </div>
+    </div>
+
     <!-- หน้าต่าง Popup แสดงข้อมูล รูปภาพ วิดีโอ และเสียง -->
     <div id="info-popup" class="info-popup">
       <div class="popup-header">
@@ -375,125 +361,97 @@
       </button>
     </div>
 
-    <!-- แถบปุ่มควบคุมด้านล่าง -->
-    <div class="control-bar">
-      <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
-        👁️ ซ่อนจุดอธิบาย
-      </button>
-      <button class="ctrl-btn" onclick="prevHotspot()">
-        ◀ ก่อนหน้า
-      </button>
-      <button class="ctrl-btn primary" onclick="nextHotspot()">
-        ถัดไป ▶
-      </button>
-      <button class="ctrl-btn" onclick="resetCamera()">
-        🔄 รีเซ็ตมุมมอง
-      </button>
-    </div>
-
     <script>
-      // =========================================================================
-      // ส่วนตั้งค่าข้อมูล (แก้ไขและต่อยอดเนื้อหา รูปภาพ วิดีโอ เสียง ได้ที่ตรงนี้จุดเดียว!)
-      // =========================================================================
       const hotspotData = [
         {
           id: "hotspot-2",
           title: "Home sensor Y",
           desc: "เซ็นเซอร์ตรวจจับตำแหน่งเริ่มต้นของแกน Y ช่วยกำหนดจุดอ้างอิงศูนย์ (Zero Point) ให้เครื่องจักรทำงานได้อย่างแม่นยำทุกครั้ง",
           orbit: "160deg 65deg 5.5m",
-          mediaType: "", // ใส่ "image" (รวมถึง .gif) หรือ "video" (สำหรับ .mp4)
-          mediaUrl: "",  // ใส่ชื่อไฟล์ที่อัปโหลดบน GitHub เช่น "images/sensor-y.gif" หรือลิงก์รูป
-          audioUrl: ""   // ใส่ชื่อไฟล์เสียง .mp3 เช่น "audio/sensor-y.mp3" (ถ้าเว้นว่าง ระบบจะอ่านข้อความให้ฟังอัตโนมัติ)
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-3",
           title: "Tool Setter",
           desc: "อุปกรณ์วัดความยาวดอกกัดอัตโนมัติ ช่วยชดเชยค่าความยาวทูลหลังเปลี่ยนดอกกัด ลดความผิดพลาดจากการตั้งค่าด้วยมือ",
           orbit: "175deg 55deg 4.5m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-4",
           title: "Work (พื้นที่จับยึดชิ้นงาน)",
           desc: "โต๊ะทำงานและชุดจับยึดชิ้นงาน ออกแบบให้รองรับแรงสั่นสะเทือนขณะกัดงานความเร็วสูง รักษาความเรียบเนียนของผิวชิ้นงาน",
           orbit: "180deg 50deg 4.5m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-5",
           title: "3D Probe",
           desc: "หัววัดชิ้นงาน 3 มิติ ใช้สำหรับหาขอบชิ้นงาน หาจุดศูนย์กลางรูเจาะ และตรวจสอบความเอียงของชิ้นงานก่อนเริ่มกัดจริง",
           orbit: "195deg 70deg 3.8m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-6",
           title: "Tool (ชุดหัวกัด Spindle)",
           desc: "ชุดจับดอกกัดความเร็วสูง รองรับการเปลี่ยนทูลได้หลากหลายประเภท ทั้งดอกกัดหยาบ กัดละเอียด และดอกเจาะ",
           orbit: "160deg 70deg 3.8m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-7",
           title: "Camera (กล้องตรวจสอบชิ้นงาน)",
           desc: "กล้องความละเอียดสูงติดตั้งบริเวณหัวกัด ช่วยให้ผู้ควบคุมมองเห็นตำแหน่งการทำงานจริงและตรวจสอบแนวการตัดผ่านหน้าจอ",
           orbit: "180deg 75deg 3.8m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-8",
           title: "Home sensor X",
           desc: "เซ็นเซอร์ตรวจจับตำแหน่งเริ่มต้นของแกน X บนคานขวาง ควบคุมระยะการเคลื่อนที่ซ้าย-ขวาให้ปลอดภัยและแม่นยำ",
           orbit: "150deg 75deg 5.5m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         },
         {
           id: "hotspot-9",
           title: "Home sensor Z",
           desc: "เซ็นเซอร์ตรวจจับตำแหน่งสูงสุดของแกน Z ป้องกันหัวกัดเคลื่อนที่เกินระยะและกำหนดความสูงอ้างอิงเริ่มต้น",
           orbit: "180deg 75deg 5.5m",
-          mediaType: "",
-          mediaUrl: "",
-          audioUrl: ""
+          mediaType: "", mediaUrl: "", audioUrl: ""
         }
       ];
 
-      // =========================================================================
-      // ระบบการทำงานเบื้องหลัง (ไม่ต้องแก้ไขส่วนนี้)
-      // =========================================================================
       const viewer = document.getElementById('cnc-viewer');
       const popup = document.getElementById('info-popup');
       const defaultOrbit = "178.9deg 71.63deg 14.35m";
       let currentIndex = -1;
       let hotspotsVisible = true;
+      let isMenuOpen = false;
       let currentAudio = null;
       let isPlaying = false;
 
-      // แถบโหลดโมเดล
+      // ยุบ/กาง เมนูมุมบนซ้าย
+      function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+        const list = document.getElementById('menu-list');
+        const toggleBtn = document.getElementById('menu-toggle-btn');
+        if (isMenuOpen) {
+          list.classList.add('expanded');
+          toggleBtn.innerHTML = '✕ ยุบเมนู';
+        } else {
+          list.classList.remove('expanded');
+          toggleBtn.innerHTML = '☰ เครื่องมือ';
+        }
+      }
+
       viewer.addEventListener('progress', (event) => {
         const progressBar = event.target.querySelector('.progress-bar');
         const updatingBar = event.target.querySelector('.update-bar');
         updatingBar.style.width = `${event.detail.totalProgress * 100}%`;
-        if (event.detail.totalProgress === 1) {
-          progressBar.classList.add('hide');
-        } else {
-          progressBar.classList.remove('hide');
-        }
+        if (event.detail.totalProgress === 1) progressBar.classList.add('hide');
+        else progressBar.classList.remove('hide');
       });
 
-      // ผูกคำสั่งคลิกให้กับปุ่ม Hotspot ทุกจุด
       document.querySelectorAll('.Hotspot').forEach((btn) => {
         btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-id');
@@ -502,14 +460,12 @@
         });
       });
 
-      // ฟังก์ชันเลือกจุด Hotspot และซูมกล้อง
       function selectHotspot(index) {
         stopAudio();
         currentIndex = index;
         const data = hotspotData[index];
         const btn = document.querySelector(`.Hotspot[data-id="${data.id}"]`);
 
-        // ไฮไลต์ปุ่มที่เลือก
         document.querySelectorAll('.Hotspot').forEach(b => b.classList.remove('active'));
         if (btn) {
           btn.classList.add('active');
@@ -517,12 +473,10 @@
           viewer.cameraOrbit = data.orbit;
         }
 
-        // อัปเดตข้อมูลใน Popup
         document.getElementById('popup-step').textContent = `จุดที่ ${index + 1} / ${hotspotData.length}`;
         document.getElementById('popup-title').textContent = data.title;
         document.getElementById('popup-desc').textContent = data.desc;
 
-        // จัดการรูปภาพ / GIF / วิดีโอ
         const mediaBox = document.getElementById('popup-media');
         mediaBox.innerHTML = '';
         if (data.mediaUrl && data.mediaType === 'video') {
@@ -534,11 +488,9 @@
         } else {
           mediaBox.style.display = 'none';
         }
-
         popup.classList.add('open');
       }
 
-      // ปุ่มเลื่อนถัดไป / ก่อนหน้า
       function nextHotspot() {
         if (!hotspotsVisible) toggleHotspots();
         const nextIdx = (currentIndex + 1) % hotspotData.length;
@@ -551,7 +503,6 @@
         selectHotspot(prevIdx);
       }
 
-      // ปุ่มแสดง / ซ่อน Hotspot
       function toggleHotspots() {
         hotspotsVisible = !hotspotsVisible;
         const btn = document.getElementById('toggle-hs-btn');
@@ -565,7 +516,6 @@
         }
       }
 
-      // ปิด Popup และรีเซ็ตมุมกล้อง
       function closePopup() {
         stopAudio();
         popup.classList.remove('open');
@@ -579,12 +529,8 @@
         viewer.cameraOrbit = defaultOrbit;
       }
 
-      // ระบบเสียงบรรยาย (รองรับทั้งไฟล์ MP3 และเสียงอ่านภาษาไทยอัตโนมัติ)
       function toggleAudio() {
-        if (isPlaying) {
-          stopAudio();
-          return;
-        }
+        if (isPlaying) { stopAudio(); return; }
         if (currentIndex === -1) return;
         const data = hotspotData[currentIndex];
         const audioBtn = document.getElementById('audio-btn');
@@ -611,14 +557,8 @@
         const audioBtn = document.getElementById('audio-btn');
         audioBtn.classList.remove('playing');
         audioBtn.innerHTML = '🔊 ฟังเสียงบรรยาย';
-
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio = null;
-        }
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-        }
+        if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       }
     </script>
   </body>

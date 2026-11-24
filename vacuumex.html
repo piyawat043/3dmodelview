@@ -8,9 +8,7 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
 
-      :not(:defined) > * {
-        display: none;
-      }
+      :not(:defined) > * { display: none; }
 
       html, body {
         margin: 0;
@@ -111,54 +109,96 @@
         transition: width 0.3s;
       }
 
-      /* ================= แถบปุ่มควบคุมด้านล่าง ================= */
-      .control-bar {
+      /* ================= เมนูควบคุมมุมบนซ้าย (ยุบเริ่มต้น) ================= */
+      .side-menu {
         position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: 16px;
+        left: 16px;
+        z-index: 25;
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(8px);
-        padding: 8px 14px;
-        border-radius: 50px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-        border: 1px solid #e2e8f0;
-        z-index: 10;
-        max-width: 95vw;
-        overflow-x: auto;
       }
 
-      .ctrl-btn {
-        background: #ffffff;
+      .menu-toggle {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(8px);
         border: 1px solid #cbd5e1;
-        color: #334155;
-        padding: 7px 14px;
-        border-radius: 20px;
+        color: #1e293b;
+        padding: 8px 14px;
+        border-radius: 12px;
         font-family: 'Prompt', sans-serif;
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        transition: all 0.2s ease;
       }
 
-      .ctrl-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+      .menu-toggle:hover {
+        background: #ffffff;
+        border-color: #94a3b8;
+      }
+
+      .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(8px);
+        padding: 8px;
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border: 1px solid #e2e8f0;
+        width: 156px;
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top left;
+        pointer-events: none;
+        visibility: hidden;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .menu-list.expanded {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+        visibility: visible;
+      }
+
+      .ctrl-btn {
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ctrl-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
       .ctrl-btn.primary { background: #2563eb; color: #ffffff; border-color: #2563eb; }
       .ctrl-btn.primary:hover { background: #1d4ed8; }
 
       /* ================= หน้าต่าง Popup ================= */
       .info-popup {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 340px;
-        max-width: calc(100vw - 40px);
+        top: 16px;
+        right: 16px;
+        width: 330px;
+        max-width: calc(100vw - 32px);
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(10px);
         border-radius: 16px;
@@ -185,23 +225,35 @@
       .popup-title { margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #0f172a; }
       
       .popup-media { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #f1f5f9; display: none; }
-      .popup-media img, .popup-media video { width: 100%; max-height: 190px; object-fit: cover; display: block; }
+      .popup-media img, .popup-media video { width: 100%; max-height: 180px; object-fit: cover; display: block; }
       .popup-desc { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 14px 0; white-space: pre-line; }
 
       .audio-btn { width: 100%; padding: 8px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; font-family: 'Prompt', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
       .audio-btn:hover { background: #e2e8f0; }
       .audio-btn.playing { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 
-      #ar-button { background-color: #ffffff; position: absolute; top: 20px; left: 20px; padding: 8px 16px; font-family: 'Prompt', sans-serif; font-size: 13px; color: #2563eb; border-radius: 20px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor: pointer; }
+      #ar-button {
+        background-color: #ffffff;
+        position: absolute;
+        bottom: 16px;
+        left: 16px;
+        padding: 8px 14px;
+        font-family: 'Prompt', sans-serif;
+        font-size: 13px;
+        color: #2563eb;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+      }
 
       @media (max-width: 640px) {
-        .info-popup { top: 12px; right: 12px; left: 12px; width: auto; }
+        .info-popup { top: 62px; right: 12px; left: 12px; width: auto; }
       }
     </style>
   </head>
   <body>
 
-    <!-- ใช้การตั้งค่ามุมกล้องและแสงจาก snippet_2.txt -->
     <model-viewer 
       id="vacuum-viewer"
       src="https://piyawat043.github.io/3dmodelview/vacuum_ex.glb" 
@@ -219,7 +271,6 @@
       min-camera-orbit="-14deg 5deg auto" 
       max-camera-orbit="8deg 79deg auto">
 
-      <!-- ข้อมูล Hotspot จากไฟล์ snippet_2.txt -->
       <button class="Hotspot" slot="hotspot-1" data-id="hotspot-1" data-position="0.14728438389019627m -0.04420307828119793m -0.2125742962494918m" data-normal="0.0020909524678074756m 0.9999842891292221m 0.005200904969524393m" data-visibility-attribute="visible">
           <div class="HotspotAnnotation">ตัวอย่างสำเร็จ</div>
       </button>
@@ -241,10 +292,31 @@
       </button>
     </model-viewer>
 
+    <!-- เมนูควบคุมมุมบนซ้าย (เริ่มต้นยุบไว้) -->
+    <div class="side-menu">
+      <button id="menu-toggle-btn" class="menu-toggle" onclick="toggleMenu()">
+        ☰ เครื่องมือ
+      </button>
+      <div id="menu-list" class="menu-list">
+        <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
+          👁️ ซ่อนจุดอธิบาย
+        </button>
+        <button class="ctrl-btn" onclick="prevHotspot()">
+          ◀ ก่อนหน้า
+        </button>
+        <button class="ctrl-btn primary" onclick="nextHotspot()">
+          ▶ ถัดไป
+        </button>
+        <button class="ctrl-btn" onclick="resetCamera()">
+          🔄 รีเซ็ตมุมมอง
+        </button>
+      </div>
+    </div>
+
     <!-- Popup สำหรับแสดงข้อมูล / รูปภาพ / เสียง -->
     <div id="info-popup" class="info-popup">
       <div class="popup-header">
-        <span id="popup-step" class="popup-badge">จุดที่ 1 / 4</span>
+        <span id="popup-step" class="popup-badge">ขั้นตอน 1 / 4</span>
         <button class="close-btn" onclick="closePopup()" title="ปิดหน้าต่าง">✕</button>
       </div>
       <h3 id="popup-title" class="popup-title">ชื่อขั้นตอน</h3>
@@ -255,18 +327,7 @@
       </button>
     </div>
 
-    <!-- แถบควบคุมด้านล่าง -->
-    <div class="control-bar">
-      <button id="toggle-hs-btn" class="ctrl-btn" onclick="toggleHotspots()">
-        👁️ ซ่อนจุดอธิบาย
-      </button>
-      <button class="ctrl-btn" onclick="prevHotspot()">◀ ก่อนหน้า</button>
-      <button class="ctrl-btn primary" onclick="nextHotspot()">ถัดไป ▶</button>
-      <button class="ctrl-btn" onclick="resetCamera()">🔄 รีเซ็ตมุมมอง</button>
-    </div>
-
     <script>
-      // ข้อมูลเนื้อหาแบบต่อยอดได้เรื่อยๆ (จัดระเบียบใหม่ให้อ่านง่ายและรองรับการขึ้นบรรทัดใหม่)
       const hotspotData = [
         {
           id: "hotspot-1",
@@ -303,10 +364,23 @@
       const defaultOrbit = "3.778deg 74.8deg 2.674m";
       let currentIndex = -1;
       let hotspotsVisible = true;
+      let isMenuOpen = false;
       let currentAudio = null;
       let isPlaying = false;
 
-      // จัดการแถบโหลด
+      function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+        const list = document.getElementById('menu-list');
+        const toggleBtn = document.getElementById('menu-toggle-btn');
+        if (isMenuOpen) {
+          list.classList.add('expanded');
+          toggleBtn.innerHTML = '✕ ยุบเมนู';
+        } else {
+          list.classList.remove('expanded');
+          toggleBtn.innerHTML = '☰ เครื่องมือ';
+        }
+      }
+
       viewer.addEventListener('progress', (event) => {
         const progressBar = event.target.querySelector('.progress-bar');
         const updatingBar = event.target.querySelector('.update-bar');
@@ -315,7 +389,6 @@
         else progressBar.classList.remove('hide');
       });
 
-      // ผูกคำสั่งคลิก
       document.querySelectorAll('.Hotspot').forEach((btn) => {
         btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-id');
